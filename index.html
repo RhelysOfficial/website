@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
   <style>
     * {
       margin: 0;
@@ -278,25 +279,27 @@
     .contact-links {
       display: flex;
       justify-content: center;
-      gap: 20px;
+      gap: 30px;
       flex-wrap: wrap;
     }
-    .contact-links a {
+    .contact-links a i {
+      font-size: 1.5em;
       color: #dbeafe;
-      text-decoration: none;
-      font-size: 0.9em;
-      transition: color 0.3s;
+      transition: color 0.3s, transform 0.3s;
     }
-    .contact-links a:hover {
+    .contact-links a:hover i {
       color: #fff;
+      transform: scale(1.2);
     }
     @media (max-width: 768px) {
       .pre-footer {
         padding: 15px;
       }
       .contact-links {
-        flex-direction: column;
-        gap: 15px;
+        gap: 20px;
+      }
+      .contact-links a i {
+        font-size: 1.2em;
       }
     }
 
@@ -803,9 +806,18 @@
     <!-- Pre-Footer (Sosmed/Kontak) -->
     <section class="pre-footer" id="contact">
       <div class="contact-links">
-        <a href="#" target="_blank">Instagram</a>
-        <a href="#" target="_blank">WhatsApp</a>
-        <a href="mailto:rhelysgroup@gmail.com">rhelysgroup@gmail.com</a>
+        <a href="https://www.instagram.com/rhelysofficial?igsh=MWxjcXE0eGR3eHllNQ==" target="_blank" title="Instagram">
+          <i class="fab fa-instagram"></i>
+        </a>
+        <a href="https://www.tiktok.com/@rhlys.official?_t=ZS-8vcaeUrsvoo&_r=1" target="_blank" title="TikTok">
+          <i class="fab fa-tiktok"></i>
+        </a>
+        <a href="https://wa.me/628123456789" target="_blank" title="WhatsApp">
+          <i class="fab fa-whatsapp"></i>
+        </a>
+        <a href="mailto:rhelysgroup@gmail.com" title="Email">
+          <i class="fas fa-envelope"></i>
+        </a>
       </div>
     </section>
 
@@ -834,7 +846,6 @@
         <select id="productShippingCity" onchange="updateProductShippingCost()">
           <option value="">Pilih kota</option>
           <option value="jakarta">Free Ongkir</option>
-         
         </select>
         <div class="shipping-cost" id="productShippingCost">Ongkir: Rp 0</div>
       </div>
@@ -854,9 +865,9 @@
         <label for="shippingCity">Kota Tujuan (J&T)</label>
         <select id="shippingCity" onchange="updateShippingCost()">
           <option value="">Pilih kota</option>
-          
-          <option value="bandung">Free Ongkir</option>
-         
+          <option value="jakarta">Jabodetabek - Free Ongkir</option>
+          <option value="bandung">JAWA - Free Ongkir</option>
+          <option value="lainnya">Lainnya - Free Ongkir</option>
         </select>
         <div class="shipping-cost" id="shippingCost">Ongkir: Rp 0</div>
       </div>
@@ -880,8 +891,8 @@
 
     // Ongkir J&T
     const shippingCosts = {
-      jakarta: 0,
-      bandung: 0,
+      jakarta: 1,
+      bandung: 1,
       surabaya: 20000,
       lainnya: 25000
     };
@@ -1047,7 +1058,7 @@
       const shippingCost = shippingCosts[shippingCity] || 0;
       const itemsTotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
       const total = itemsTotal + shippingCost;
-      const invoiceUrl = 'https://checkout-staging.xendit.co/od/Testpay';
+      const invoiceUrl = 'payment.html';
       alert(`Menuju pembayaran. Barang: Rp ${itemsTotal.toLocaleString('id-ID')}, Ongkir: Rp ${shippingCost.toLocaleString('id-ID')}, Total: Rp ${total.toLocaleString('id-ID')}`);
       window.open(invoiceUrl, '_blank');
       sessionStorage.removeItem('cart');
@@ -1154,12 +1165,7 @@
       }
       const shippingCost = shippingCosts[shippingCity] || 0;
       const total = currentProduct.price + shippingCost;
-      const invoiceLinks = {
-        'eau-de-parfum': 'https://checkout-staging.xendit.co/od/Testpay',
-        'nuit': 'https://checkout-staging.xendit.co/od/Testpay',
-        'belle': 'https://checkout-staging.xendit.co/od/Testpay'
-      };
-      const invoiceUrl = invoiceLinks[currentProduct.id] || 'https://dashboard.xendit.co';
+      const invoiceUrl = 'payment.html';
       alert(`Menuju pembayaran. Barang: Rp ${currentProduct.price.toLocaleString('id-ID')}, Ongkir: Rp ${shippingCost.toLocaleString('id-ID')}, Total: Rp ${total.toLocaleString('id-ID')}`);
       window.open(invoiceUrl, '_blank');
       sessionStorage.removeItem('productShippingCity');

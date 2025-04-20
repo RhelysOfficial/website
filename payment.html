@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1200">
+    <title>Formulir Pembayaran Elegan</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #1e3a8a, #0a1a3b);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #333;
+            overflow: hidden;
+        }
+        .container {
+            background: #fff;
+            width: 100%;
+            min-width: 1000px;
+            height: 100vh;
+            padding: 80px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+            overflow-y: auto;
+            overflow-x: auto;
+        }
+        .header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 10px;
+            background: linear-gradient(90deg, #FFD700, #DAA520);
+        }
+        h2 {
+            font-family: 'Playfair Display', serif;
+            text-align: center;
+            color: #0a1a3b;
+            font-size: 4em;
+            margin-bottom: 50px;
+            letter-spacing: 3px;
+            text-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+        }
+        .steps {
+            display: flex;
+            justify-content: center;
+            gap: 60px;
+            margin-bottom: 50px;
+        }
+        .step {
+            text-align: center;
+            padding: 15px 25px;
+            font-size: 1.4em;
+            color: #999;
+            border-radius: 30px;
+            transition: all 0.3s ease;
+        }
+        .step.active {
+            color: #FFD700;
+            background: #0a1a3b;
+            font-weight: 600;
+            transform: scale(1.15);
+        }
+        .form-step {
+            display: none;
+            width: 900px;
+            margin: 0 auto;
+            animation: fadeIn 0.5s ease;
+        }
+        .form-step.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .form-group {
+            margin-bottom: 35px;
+        }
+        label {
+            font-family: 'Playfair Display', serif;
+            display: block;
+            margin-bottom: 15px;
+            color: #0a1a3b;
+            font-size: 1.5em;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 18px;
+            border: 1px solid #DAA520;
+            border-radius: 15px;
+            font-size: 1.2em;
+            background: #f8fafc;
+            transition: all 0.3s ease;
+        }
+        input:focus, select:focus, textarea:focus {
+            border-color: #FFD700;
+            background: #fff;
+            box-shadow: 0 0 15px rgba(218, 165, 32, 0.5);
+            outline: none;
+        }
+        textarea {
+            resize: vertical;
+            min-height: 160px;
+        }
+        .button-group {
+            display: flex;
+            gap: 25px;
+            justify-content: center;
+        }
+        button {
+            flex: 1;
+            max-width: 300px;
+            padding: 20px;
+            background: #FFD700;
+            color: #0a1a3b;
+            border: none;
+            border-radius: 15px;
+            font-family: 'Playfair Display', serif;
+            font-size: 1.4em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        button:hover {
+            background: #DAA520;
+            transform: translateY(-4px);
+            box-shadow: 0 6px 20px rgba(218, 165, 32, 0.5);
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .error {
+            color: #dc2626;
+            font-size: 1.1em;
+            margin-top: 10px;
+            display: none;
+        }
+        .preview-box {
+            background: #f8fafc;
+            padding: 25px;
+            border-radius: 15px;
+            border: 1px solid #DAA520;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        .preview-box p {
+            margin: 15px 0;
+            font-size: 1.2em;
+        }
+        .preview-box strong {
+            color: #0a1a3b;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            font-size: 1.1em;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header"></div>
+        <h2>Formulir Pembayaran</h2>
+        <div class="steps">
+            <div class="step active" data-step="1">Informasi Pribadi</div>
+            <div class="step" data-step="2">Pembayaran</div>
+            <div class="step" data-step="3">Konfirmasi</div>
+        </div>
+        <form id="paymentForm">
+            <!-- Step 1: Informasi Pribadi -->
+            <div class="form-step active" data-step="1">
+                <div class="form-group">
+                    <label for="name">Nama Lengkap</label>
+                    <input type="text" id="name" name="name" required>
+                    <span class="error" id="nameError">Nama minimal 3 karakter</span>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" required>
+                    <span class="error" id="emailError">Email tidak valid</span>
+                </div>
+                <div class="form-group">
+                    <label for="phone">Nomor Telepon</label>
+                    <input type="tel" id="phone" name="phone" required>
+                    <span class="error" id="phoneError">Nomor telepon tidak valid (10-13 digit)</span>
+                </div>
+                <div class="form-group">
+                    <label for="subdistrict">Kecamatan</label>
+                    <input type="text" id="subdistrict" name="subdistrict" required>
+                    <span class="error" id="subdistrictError">Kecamatan minimal 3 karakter</span>
+                </div>
+                <div class="form-group">
+                    <label for="city">Kota/Kabupaten</label>
+                    <input type="text" id="city" name="city" required>
+                    <span class="error" id="cityError">Kota/Kabupaten minimal 3 karakter</span>
+                </div>
+                <div class="form-group">
+                    <label for="postal_code">Kode Pos</label>
+                    <input type="text" id="postal_code" name="postal_code" pattern="[0-9]{5}" required>
+                    <span class="error" id="postalCodeError">Kode Pos harus 5 digit angka</span>
+                </div>
+                <div class="button-group">
+                    <button type="button" onclick="nextStep(2)">Lanjut</button>
+                </div>
+            </div>
+            <!-- Step 2: Detail Pembayaran -->
+            <div class="form-step" data-step="2">
+                <div class="form-group">
+                    <label>Jumlah Pembayaran</label>
+                    <p style="font-size: 1.2em; color: #0a1a3b;">IDR 65,000</p>
+                    <input type="hidden" id="amount" name="amount" value="65000">
+                </div>
+                <div class="form-group">
+                    <label for="method">Metode Pembayaran</label>
+                    <select id="method" name="method" required>
+                        <option value="">Pilih Metode</option>
+                        <option value="bank_bca">Transfer Bank (BCA)</option>
+                        <option value="qris">QRIS</option>
+                    </select>
+                    <span class="error" id="methodError">Pilih metode pembayaran</span>
+                </div>
+                <div class="form-group" id="bankDetails" style="display: none;">
+                    <label>Detail Rekening</label>
+                    <p id="bankInfo">Bank BCA<br>No. Rekening: 123-456-7890<br>Atas Nama: PT EleganPay</p>
+                </div>
+                <div class="form-group" id="qrisDetails" style="display: none;">
+                    <label>Kode QRIS</label>
+                    <img src="qris.jpg" alt="QRIS Code" class="qris-image">
+                    <p>Scan kode QR di atas menggunakan aplikasi pembayaran yang mendukung QRIS.</p>
+                </div>
+                <div class="form-group">
+                    <label for="notes">Catatan (Opsional)</label>
+                    <textarea id="notes" name="notes"></textarea>
+                </div>
+                <div class="button-group">
+                    <button type="button" onclick="prevStep(1)">Kembali</button>
+                    <button type="button" onclick="nextStep(3)">Lanjut</button>
+                </div>
+            </div>
+            <!-- Step 3: Konfirmasi -->
+            <div class="form-step" data-step="3">
+                <div class="form-group">
+                    <label>Pratinjau Data</label>
+                    <div class="preview-box">
+                        <p><strong>Nama:</strong> <span id="previewName"></span></p>
+                        <p><strong>Email:</strong> <span id="previewEmail"></span></p>
+                        <p><strong>Telepon:</strong> <span id="previewPhone"></span></p>
+                        <p><strong>Alamat:</strong> <span id="previewAddress"></span></p>
+                        <p><strong>Jumlah:</strong> <span id="previewAmount"></span></p>
+                        <p><strong>Metode:</strong> <span id="previewMethod"></span></p>
+                        <p><strong>Catatan:</strong> <span id="previewNotes"></span></p>
+                    </div>
+                </div>
+                <div class="button-group">
+                    <button type="button" onclick="prevStep(2)">Kembali</button>
+                    <button type="submit">Kirim Pembayaran</button>
+                </div>
+            </div>
+        </form>
+        <div class="footer">
+            © 2025 Rhélys.
+        </div>
+    </div>
+
+    <script>
+        // Inisialisasi EmailJS
+        emailjs.init("co9mBT0USLm4NUin_");
+
+        // Step navigation
+        function nextStep(step) {
+            if (validateStep(getCurrentStep())) {
+                document.querySelector(`.form-step.active`).classList.remove('active');
+                document.querySelector(`.form-step[data-step="${step}"]`).classList.add('active');
+                document.querySelector(`.step.active`).classList.remove('active');
+                document.querySelector(`.step[data-step="${step}"]`).classList.add('active');
+                updatePreview();
+            }
+        }
+
+        function prevStep(step) {
+            document.querySelector(`.form-step.active`).classList.remove('active');
+            document.querySelector(`.form-step[data-step="${step}"]`).classList.add('active');
+            document.querySelector(`.step.active`).classList.remove('active');
+            document.querySelector(`.step[data-step="${step}"]`).classList.add('active');
+        }
+
+        function getCurrentStep() {
+            return parseInt(document.querySelector('.form-step.active').getAttribute('data-step'));
+        }
+
+        // Show/hide payment details based on method
+        document.getElementById('method').addEventListener('change', function() {
+            const bankDetails = document.getElementById('bankDetails');
+            const qrisDetails = document.getElementById('qrisDetails');
+            bankDetails.style.display = 'none';
+            qrisDetails.style.display = 'none';
+
+            if (this.value === 'bank_bca') {
+                bankDetails.style.display = 'block';
+            } else if (this.value === 'qris') {
+                qrisDetails.style.display = 'block';
+            }
+        });
+
+        // Update preview
+        function updatePreview() {
+            document.getElementById('previewName').textContent = document.getElementById('name').value || '-';
+            document.getElementById('previewEmail').textContent = document.getElementById('email').value || '-';
+            document.getElementById('previewPhone').textContent = document.getElementById('phone').value || '-';
+            const subdistrict = document.getElementById('subdistrict').value;
+            const city = document.getElementById('city').value;
+            const postalCode = document.getElementById('postal_code').value;
+            document.getElementById('previewAddress').textContent = 
+                (subdistrict || city || postalCode) ? `${subdistrict}, ${city}, ${postalCode}` : '-';
+            document.getElementById('previewAmount').textContent = 'IDR 65,000';
+            const method = document.getElementById('method').value;
+            let methodText = '-';
+            if (method === 'bank_bca') methodText = 'Transfer Bank (BCA)';
+            else if (method === 'qris') methodText = 'QRIS';
+            document.getElementById('previewMethod').textContent = methodText;
+            document.getElementById('previewNotes').textContent = document.getElementById('notes').value || '-';
+        }
+
+        // Validate step
+        function validateStep(step) {
+            let isValid = true;
+            document.querySelectorAll('.error').forEach(error => error.style.display = 'none');
+
+            if (step === 1) {
+                const name = document.getElementById('name').value;
+                if (!name || name.length < 3) {
+                    document.getElementById('nameError').style.display = 'block';
+                    isValid = false;
+                }
+                const email = document.getElementById('email').value;
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(email)) {
+                    document.getElementById('emailError').style.display = 'block';
+                    isValid = false;
+                }
+                const phone = document.getElementById('phone').value;
+                const phoneRegex = /^\+?\d{10,13}$/;
+                if (!phoneRegex.test(phone)) {
+                    document.getElementById('phoneError').style.display = 'block';
+                    isValid = false;
+                }
+                const subdistrict = document.getElementById('subdistrict').value;
+                if (!subdistrict || subdistrict.length < 3) {
+                    document.getElementById('subdistrictError').style.display = 'block';
+                    isValid = false;
+                }
+                const city = document.getElementById('city').value;
+                if (!city || city.length < 3) {
+                    document.getElementById('cityError').style.display = 'block';
+                    isValid = false;
+                }
+                const postalCode = document.getElementById('postal_code').value;
+                const postalCodeRegex = /^\d{5}$/;
+                if (!postalCodeRegex.test(postalCode)) {
+                    document.getElementById('postalCodeError').style.display = 'block';
+                    isValid = false;
+                }
+            } else if (step === 2) {
+                const method = document.getElementById('method').value;
+                if (!method) {
+                    document.getElementById('methodError').style.display = 'block';
+                    isValid = false;
+                }
+            }
+
+            return isValid;
+        }
+
+        // Form submission
+        document.getElementById('paymentForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            if (validateStep(1) && validateStep(2)) {
+                const params = {
+                    name: document.getElementById('name').value,
+                    email: document.getElementById('email').value,
+                    phone: document.getElementById('phone').value,
+                    address: `${document.getElementById('subdistrict').value}, ${document.getElementById('city').value}, ${document.getElementById('postal_code').value}`,
+                    amount: '65000',
+                    method: document.getElementById('method').value === 'bank_bca' ? 'Transfer Bank (BCA)' : 'QRIS',
+                    notes: document.getElementById('notes').value || '-'
+                };
+
+                emailjs.send('service_wxyrdtu', 'template_47svydj', params)
+                    .then(() => {
+                        alert('Pembayaran berhasil diproses! Data telah dikirim ke rhelysgroup@gmail.com.');
+                        document.getElementById('paymentForm').reset();
+                        document.querySelector(`.form-step.active`).classList.remove('active');
+                        document.querySelector(`.form-step[data-step="1"]`).classList.add('active');
+                        document.querySelector(`.step.active`).classList.remove('active');
+                        document.querySelector(`.step[data-step="1"]`).classList.add('active');
+                        document.getElementById('bankDetails').style.display = 'none';
+                        document.getElementById('qrisDetails').style.display = 'none';
+                        updatePreview();
+                    }, (error) => {
+                        console.error('Error:', error);
+                        alert('Gagal mengirim data: ' + error.text + '. Silakan coba lagi atau hubungi rhelysgroup@gmail.com.');
+                    });
+            }
+        });
+    </script>
+</body>
+</html>
