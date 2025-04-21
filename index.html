@@ -38,14 +38,14 @@
     .cover h1 {
       font-family: 'Playfair Display', serif;
       font-size: 4em;
-      color: white;
+      color: #D4A017;
       text-shadow: 0 2px 10px rgba(0,0,0,0.5);
       margin-bottom: 20px;
     }
     .cover button {
       padding: 14px 30px;
       font-size: 18px;
-      background-color: #fff;
+      background-color: #D4A017;
       color: #0d1b2a;
       border: none;
       border-radius: 8px;
@@ -87,7 +87,7 @@
       transition: color 0.3s;
     }
     .navbar a:hover {
-      color: #fff;
+      color: #D4A017;
     }
     .navbar .cart {
       position: relative;
@@ -128,7 +128,7 @@
     .hero h1 {
       font-family: 'Playfair Display', serif;
       font-size: 4em;
-      color: #fff;
+      color: #D4A017;
       text-shadow: 0 2px 10px rgba(0,0,0,0.5);
       position: relative;
       z-index: 1;
@@ -176,7 +176,7 @@
     }
     .countdown-section h2 {
       font-family: 'Playfair Display', serif;
-      color: #fff;
+      color: #d49d12;
       font-size: 2em;
       margin-bottom: 20px;
     }
@@ -737,8 +737,8 @@
       </div>
       <div class="nav-links">
         <a href="#home">Home</a>
-        <a href="#products">Produk</a>
-        <a href="#contact" onclick="scrollToContact()">Kontak</a>
+        <a href="#products">Collection</a>
+        <a href="#contact" onclick="scrollToContact()">Contact</a>
       </div>
       <span class="cart" onclick="openCartPopup()"><span class="cart-count" id="cartCount">0</span>🛒</span>
     </nav>
@@ -748,16 +748,24 @@
       <h1>Rhélys</h1>
       <h1>The Essence of Eternity</h1>
       <p>Esensi dari keabadian</p>
-      <button class="cta" onclick="document.getElementById('products').scrollIntoView({behavior: 'smooth'})">Lihat Koleksi</button>
+      <button class="cta" onclick="document.getElementById('products').scrollIntoView({behavior: 'smooth'})">Explore Collection</button>
     </section>
-
+    
+    <!-- about -->
+<section class="countdown-section">                
+      <h2>About</h2>
+     <p>Rhélys adalah perpaduan antara mitologi dan keindahan alam. Terinspirasi dari Rhéa, ibu para dewa, dan bunga lily yang melambangkan kemurnian. Ini adalah parfum untuk yang berjiwa kuat, tenang, dan tak tersentuh oleh waktu sesaat.</p>
+    </section>
+    
     <!-- Countdown Section -->
-    <section class="countdown-section">
-      <h2>Grand Launching</h2>
+    <section class="countdown-section">                
+      <section class="countdown-section">                
+      <h2>Grand Unveiling</h2>
       <p>Free Card Member + Free Ongkir</p>
       <div class="countdown">
         <p id="countdownTimer">Days 0 | Jam: 0 | Menit: 0 | Detik: 0</p>
       </div>
+    </section>      
     </section>
 
     <!-- Products -->
