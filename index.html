@@ -9,6 +9,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <!-- Tambahkan Axios untuk request ke GitHub API -->
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <style>
     * {
       margin: 0;
@@ -1238,6 +1240,88 @@
   </div>
 
   <script>
+    // Konfigurasi GitHub
+    const GITHUB_TOKEN = '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'; // Ganti dengan PAT kamu
+    const GITHUB_OWNER = 'RhelysOfficial'; // Username GitHub
+    const GITHUB_REPO = 'rhelys-users'; // Nama repositori
+    const GITHUB_FILE_PATH = 'users.json'; // File penyimpanan data
+
+    // Fungsi untuk mendapatkan SHA file (diperlukan untuk update file)
+    async function getFileSha() {
+      try {
+        const response = await axios.get(
+          `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${GITHUB_FILE_PATH}`,
+          {
+            headers: { Authorization: `token ${GITHUB_TOKEN}` }
+          }
+        );
+        return response.data.sha;
+      } catch (error) {
+        console.error('Error getting file SHA:', error);
+        return null;
+      }
+    }
+
+    // Fungsi untuk membaca data pengguna dari GitHub
+    async function getUserData(username) {
+      try {
+        const response = await axios.get(
+          `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${GITHUB_FILE_PATH}`,
+          {
+            headers: { Authorization: `token ${GITHUB_TOKEN}` }
+          }
+        );
+        const content = JSON.parse(atob(response.data.content));
+        const user = content.users.find(u => u.username === username);
+        return user || null;
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+        return null;
+      }
+    }
+
+    // Fungsi untuk menyimpan data pengguna ke GitHub
+    async function saveUserData(username, name, profilePic) {
+      try {
+        // Ambil data saat ini
+        const response = await axios.get(
+          `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${GITHUB_FILE_PATH}`,
+          {
+            headers: { Authorization: `token ${GITHUB_TOKEN}` }
+          }
+        );
+        const content = JSON.parse(atob(response.data.content));
+        const sha = response.data.sha;
+
+        // Perbarui atau tambahkan pengguna
+        const userIndex = content.users.findIndex(u => u.username === username);
+        if (userIndex >= 0) {
+          content.users[userIndex] = { username, name, profile_picture: profilePic };
+        } else {
+          content.users.push({ username, name, profile_picture: profilePic });
+        }
+
+        // Encode ke base64
+        const encodedContent = btoa(JSON.stringify(content, null, 2));
+
+        // Simpan kembali ke GitHub
+        await axios.put(
+          `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${GITHUB_FILE_PATH}`,
+          {
+            message: `Update user data for ${username}`,
+            content: encodedContent,
+            sha: sha
+          },
+          {
+            headers: { Authorization: `token ${GITHUB_TOKEN}` }
+          }
+        );
+        console.log('User data saved!');
+      } catch (error) {
+        console.error('Error saving user data:', error);
+      }
+    }
+
     let currentSlide = 0;
     let slides = [];
     let currentProduct = { title: '', price: 0, id: '' };
@@ -1618,16 +1702,17 @@
       `;
     }
 
-    function openUserInfoPopup() {
+    async function openUserInfoPopup() {
       const username = sessionStorage.getItem('username');
-      const profilePic = sessionStorage.getItem('profilePic') || 'https://via.placeholder.com/80';
-      const memberStatus = sessionStorage.getItem('memberStatus') || 'Member';
+      const name = sessionStorage.getItem('name') || username;
+      const profilePic = sessionStorage.getItem('profilePic') || 'https://cdn-icons-png.flaticon.com/512/3088/3088765.png';
+      const memberStatus = sessionStorage.getItem('memberStatus') || 'Rhelys Card💳';
       const loginContent = document.getElementById('loginContent');
       loginContent.innerHTML = `
         <h2>Informasi Pengguna</h2>
         <div class="user-banner">
           <img src="${profilePic}" alt="Profile Picture" class="profile-pic">
-          <div class="username">${username}</div>
+          <div class="username">${name}</div>
           <div class="member-status">Status: ${memberStatus}</div>
           <input type="file" id="profilePicInput" accept="image/*" style="display: none;" onchange="handleProfilePicChange(event)">
           <button class="change-profile-pic-btn" onclick="triggerProfilePicUpload()">Ubah Foto Profil</button>
@@ -1643,13 +1728,17 @@
       document.getElementById('profilePicInput').click();
     }
 
-    function handleProfilePicChange(event) {
+    async function handleProfilePicChange(event) {
       const file = event.target.files[0];
       if (file) {
         const reader = new FileReader();
-        reader.onload = function(e) {
+        reader.onload = async function(e) {
           const newProfilePic = e.target.result;
+          const username = sessionStorage.getItem('username');
+          const name = sessionStorage.getItem('name') || username;
           sessionStorage.setItem('profilePic', newProfilePic);
+          // Simpan ke GitHub
+          await saveUserData(username, name, newProfilePic);
           updateNavbarAfterLogin();
           openUserInfoPopup();
         };
@@ -1679,7 +1768,7 @@
       document.getElementById('loginPopup').style.display = 'none';
     }
 
-    function handleLogin(event) {
+    async function handleLogin(event) {
       event.preventDefault();
       const username = document.getElementById('username').value;
       const password = document.getElementById('password').value;
@@ -1687,11 +1776,27 @@
 
       // Validasi dummy
       if (username === 'Rizka' && password === 'Rizka Cantik') {
+        // Cek apakah pengguna ada di GitHub
+        const userData = await getUserData(username);
+        if (userData) {
+          // Gunakan data dari GitHub
+          sessionStorage.setItem('isLoggedIn', 'true');
+          sessionStorage.setItem('username', username);
+          sessionStorage.setItem('name', userData.name);
+          sessionStorage.setItem('profilePic', userData.profile_picture);
+          sessionStorage.setItem('memberStatus', 'Rhelys Card💳');
+        } else {
+          // Jika pengguna baru, simpan ke GitHub
+          const name = username; // Ganti dengan nama asli jika ada input
+          const profilePic = 'https://cdn-icons-png.flaticon.com/512/3088/3088765.png'; // Default profile pic
+          await saveUserData(username, name, profilePic);
+          sessionStorage.setItem('isLoggedIn', 'true');
+          sessionStorage.setItem('username', username);
+          sessionStorage.setItem('name', name);
+          sessionStorage.setItem('profilePic', profilePic);
+          sessionStorage.setItem('memberStatus', 'Rhelys Card💳');
+        }
         alert('Login berhasil!');
-        sessionStorage.setItem('isLoggedIn', 'true');
-        sessionStorage.setItem('username', username);
-        sessionStorage.setItem('profilePic', 'https://cdn-icons-png.flaticon.com/512/3088/3088765.png'); // Default profile pic
-        sessionStorage.setItem('memberStatus', 'Rhelys Card💳'); // Default member status
         closeLoginPopup();
         updateNavbarAfterLogin();
       } else {
@@ -1707,15 +1812,16 @@
     function updateNavbarAfterLogin() {
       const isLoggedIn = sessionStorage.getItem('isLoggedIn');
       const username = sessionStorage.getItem('username');
-      const profilePic = sessionStorage.getItem('profilePic') || 'https://via.placeholder.com/80';
-      const memberStatus = sessionStorage.getItem('memberStatus') || 'Member';
+      const name = sessionStorage.getItem('name') || username;
+      const profilePic = sessionStorage.getItem('profilePic') || 'https://cdn-icons-png.flaticon.com/512/3088/3088765.png';
+      const memberStatus = sessionStorage.getItem('memberStatus') || 'Rhelys Card💳';
       const navbarActions = document.querySelector('.navbar-actions');
       
       if (isLoggedIn) {
         navbarActions.innerHTML = `
           <span class="cart" onclick="openCartPopup()"><i class="fas fa-shopping-cart"></i><span class="cart-count" id="cartCount">0</span></span>
           <img src="${profilePic}" alt="Profile Picture" class="user-profile-pic" onclick="toggleUserDropdown()">
-          <span class="username" onclick="openUserInfoPopup()">${username}</span>
+          <span class="username" onclick="openUserInfoPopup()">${name}</span>
           <span class="member-badge" onclick="openMemberBenefitsPopup()">${memberStatus}</span>
           <div class="user-dropdown">
             <a href="#" onclick="openUserInfoPopup()">User Info</a>
@@ -1734,6 +1840,7 @@
     function logout() {
       sessionStorage.removeItem('isLoggedIn');
       sessionStorage.removeItem('username');
+      sessionStorage.removeItem('name');
       sessionStorage.removeItem('profilePic');
       sessionStorage.removeItem('memberStatus');
       alert('Anda telah logout.');
