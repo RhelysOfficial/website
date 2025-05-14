@@ -1241,638 +1241,640 @@
 
   <script>
     // Konfigurasi GitHub
-    const GITHUB_TOKEN = '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'; // Ganti dengan PAT kamu
-    const GITHUB_OWNER = 'RhelysOfficial'; // Username GitHub
-    const GITHUB_REPO = 'Base'; // Nama repositori
-    const GITHUB_FILE_PATH = 'users.json'; // File penyimpanan data
+const GITHUB_TOKEN = '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'; // Ganti dengan PAT kamu
+const GITHUB_OWNER = 'RhelysOfficial'; // Username GitHub
+const GITHUB_REPO = 'Base'; // Nama repositori
+const GITHUB_FILE_PATH = 'users.json'; // File penyimpanan data
 
-    // Fungsi untuk mendapatkan SHA file (diperlukan untuk update file)
-    async function getFileSha() {
-      try {
-        const response = await axios.get(
-          `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${GITHUB_FILE_PATH}`,
-          {
-            headers: { Authorization: `token ${GITHUB_TOKEN}` }
-          }
-        );
-        return response.data.sha;
-      } catch (error) {
-        console.error('Error getting file SHA:', error);
-        return null;
+// Fungsi untuk mendapatkan SHA file (diperlukan untuk update file)
+async function getFileSha() {
+  try {
+    const response = await axios.get(
+      `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${GITHUB_FILE_PATH}`,
+      {
+        headers: { Authorization: `token ${GITHUB_TOKEN}` }
       }
-    }
+    );
+    return response.data.sha;
+  } catch (error) {
+    console.error('Error getting file SHA:', error);
+    return null;
+  }
+}
 
-    // Fungsi untuk membaca data pengguna dari GitHub
-    async function getUserData(username) {
-      try {
-        const response = await axios.get(
-          `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${GITHUB_FILE_PATH}`,
-          {
-            headers: { Authorization: `token ${GITHUB_TOKEN}` }
-          }
-        );
-        const content = JSON.parse(atob(response.data.content));
-        const user = content.users.find(u => u.username === username);
-        return user || null;
-      } catch (error) {
-        console.error('Error fetching user data:', error);
-        return null;
+// Fungsi untuk membaca data pengguna dari GitHub
+async function getUserData(username) {
+  try {
+    const response = await axios.get(
+      `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${GITHUB_FILE_PATH}`,
+      {
+        headers: { Authorization: `token ${GITHUB_TOKEN}` }
       }
-    }
+    );
+    const content = JSON.parse(atob(response.data.content));
+    const user = content.users.find(u => u.username === username);
+    return user || null;
+  } catch (error) {
+    console.error('Error fetching user data:', error);
+    return null;
+  }
+}
 
-    // Fungsi untuk menyimpan data pengguna ke GitHub
-    async function saveUserData(username, name, profilePic) {
-      try {
-        // Ambil data saat ini
-        const response = await axios.get(
-          `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${GITHUB_FILE_PATH}`,
-          {
-            headers: { Authorization: `token ${GITHUB_TOKEN}` }
-          }
-        );
-        const content = JSON.parse(atob(response.data.content));
-        const sha = response.data.sha;
-
-        // Perbarui atau tambahkan pengguna
-        const userIndex = content.users.findIndex(u => u.username === username);
-        if (userIndex >= 0) {
-          content.users[userIndex] = { username, name, profile_picture: profilePic };
-        } else {
-          content.users.push({ username, name, profile_picture: profilePic });
-        }
-
-        // Encode ke base64
-        const encodedContent = btoa(JSON.stringify(content, null, 2));
-
-        // Simpan kembali ke GitHub
-        await axios.put(
-          `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${GITHUB_FILE_PATH}`,
-          {
-            message: `Update user data for ${username}`,
-            content: encodedContent,
-            sha: sha
-          },
-          {
-            headers: { Authorization: `token ${GITHUB_TOKEN}` }
-          }
-        );
-        console.log('User data saved!');
-      } catch (error) {
-        console.error('Error saving user data:', error);
+// Fungsi untuk menyimpan data pengguna ke GitHub
+async function saveUserData(username, name, profilePic, memberCard) {
+  try {
+    // Ambil data saat ini
+    const response = await axios.get(
+      `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${GITHUB_FILE_PATH}`,
+      {
+        headers: { Authorization: `token ${GITHUB_TOKEN}` }
       }
-    }
+    );
+    const content = JSON.parse(atob(response.data.content));
+    const sha = response.data.sha;
 
-    let currentSlide = 0;
-    let slides = [];
-    let currentProduct = { title: '', price: 0, id: '' };
-
-    // Stok dummy (statis, tidak berkurang)
-    const dummyStocks = {
-      'eau-de-parfum': 100,
-      'nuit': 10,
-      'belle': 10
-    };
-
-    // Ongkir J&T
-    const shippingCosts = {
-      jakarta: 0,
-      bandung: 0,
-      surabaya: 0,
-      lainnya: 0
-    };
-
-    // Hitungan mundur
-    function updateCountdown() {
-      const targetDate = new Date('2025-05-15T00:00:00');
-      const now = new Date();
-      const diff = targetDate - now;
-
-      if (diff <= 0) {
-        document.getElementById('countdownTimer').textContent = 'Waktu habis!';
-        return;
-      }
-
-      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-
-      document.getElementById('countdownTimer').textContent = 
-        ` ${days} Days / ${hours} H / ${minutes} M / ${seconds} S`;
-    }
-
-    // Update ongkir di popup keranjang
-    function updateShippingCost() {
-      const select = document.getElementById('shippingCity');
-      const shippingCostElement = document.getElementById('shippingCost');
-      const selectedCity = select.value;
-      let shippingCost = 0;
-
-      if (selectedCity && shippingCosts[selectedCity]) {
-        shippingCost = shippingCosts[selectedCity];
-        sessionStorage.setItem('shippingCity', selectedCity);
-      } else {
-        sessionStorage.removeItem('shippingCity');
-      }
-
-      shippingCostElement.textContent = `Ongkir: Rp ${shippingCost.toLocaleString('id-ID')}`;
-      updateCartTotal();
-    }
-
-    // Update ongkir di popup produk
-    function updateProductShippingCost() {
-      const select = document.getElementById('productShippingCity');
-      const shippingCostElement = document.getElementById('productShippingCost');
-      const selectedCity = select.value;
-      let shippingCost = 0;
-
-      if (selectedCity && shippingCosts[selectedCity]) {
-        shippingCost = shippingCosts[selectedCity];
-        sessionStorage.setItem('productShippingCity', selectedCity);
-      } else {
-        sessionStorage.removeItem('productShippingCity');
-      }
-
-      shippingCostElement.textContent = `Ongkir: Rp ${shippingCost.toLocaleString('id-ID')}`;
-    }
-
-    // Update total keranjang
-    function updateCartTotal() {
-      const cart = JSON.parse(sessionStorage.getItem('cart') || '[]');
-      const shippingCity = sessionStorage.getItem('shippingCity');
-      let shippingCost = shippingCity && shippingCosts[shippingCity] ? shippingCosts[shippingCity] : 0;
-      const itemsTotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-      const total = itemsTotal + shippingCost;
-      document.getElementById('cartTotal').textContent = `Total: Rp ${total.toLocaleString('id-ID')}`;
-    }
-
-    // Keranjang
-    function updateCartCount() {
-      const cart = JSON.parse(sessionStorage.getItem('cart') || '[]');
-      const count = cart.reduce((sum, item) => sum + item.quantity, 0);
-      const cartElement = document.getElementById('cartCount');
-      cartElement.textContent = count;
-      cartElement.parentElement.classList.add('shake');
-      setTimeout(() => cartElement.parentElement.classList.remove('shake'), 500);
-    }
-
-    function showCartNotification() {
-      let notification = document.querySelector('.cart-notification');
-      if (!notification) {
-        notification = document.createElement('div');
-        notification.className = 'cart-notification';
-        document.body.appendChild(notification);
-      }
-      notification.textContent = 'Produk ditambahkan!';
-      notification.classList.add('active');
-      setTimeout(() => {
-        notification.classList.remove('active');
-      }, 2000);
-    }
-
-    function addToCart() {
-      if (dummyStocks[currentProduct.id] <= 0) {
-        alert('Maaf, stok habis!');
-        return;
-      }
-      let cart = JSON.parse(sessionStorage.getItem('cart') || '[]');
-      const existing = cart.find(item => item.id === currentProduct.id);
-      if (existing) {
-        existing.quantity += 1;
-      } else {
-        cart.push({ ...currentProduct, quantity: 1 });
-      }
-      sessionStorage.setItem('cart', JSON.stringify(cart));
-      updateCartCount();
-      showCartNotification();
-      closePopup();
-    }
-
-    function openCartPopup() {
-      const cart = JSON.parse(sessionStorage.getItem('cart') || '[]');
-      const cartItems = document.getElementById('cartItems');
-      cartItems.innerHTML = '';
-      if (cart.length === 0) {
-        cartItems.innerHTML = '<p>Keranjang kosong.</p>';
-      } else {
-        cart.forEach((item, index) => {
-          const div = document.createElement('div');
-          div.className = 'cart-item';
-          div.innerHTML = `
-            <span>${item.title}</span>
-            <div class="quantity-controls">
-              <button onclick="updateQuantity(${index}, -1)">-</button>
-              <span>${item.quantity}</span>
-              <button onclick="updateQuantity(${index}, 1)">+</button>
-            </div>
-            <span>Rp ${(item.price * item.quantity).toLocaleString('id-ID')}</span>
-            <button onclick="removeFromCart(${index})">Hapus</button>
-          `;
-          cartItems.appendChild(div);
-        });
-      }
-      const savedCity = sessionStorage.getItem('shippingCity');
-      if (savedCity) {
-        document.getElementById('shippingCity').value = savedCity;
-      }
-      updateShippingCost();
-      document.getElementById('cartPopup').style.display = 'flex';
-      const navLinks = document.querySelector('.nav-links');
-      navLinks.classList.remove('active'); // Tutup menu hamburger
-    }
-
-    function updateQuantity(index, change) {
-      let cart = JSON.parse(sessionStorage.getItem('cart') || '[]');
-      const newQuantity = cart[index].quantity + change;
-      if (newQuantity <= 0) {
-        removeFromCart(index);
-        return;
-      }
-      cart[index].quantity = newQuantity;
-      sessionStorage.setItem('cart', JSON.stringify(cart));
-      updateCartCount();
-      showCartNotification();
-      openCartPopup();
-    }
-
-    function closeCartPopup() {
-      document.getElementById('cartPopup').style.display = 'none';
-    }
-
-    function removeFromCart(index) {
-      let cart = JSON.parse(sessionStorage.getItem('cart') || '[]');
-      cart.splice(index, 1);
-      sessionStorage.setItem('cart', JSON.stringify(cart));
-      updateCartCount();
-      openCartPopup();
-    }
-
-    function checkoutCart() {
-      const cart = JSON.parse(sessionStorage.getItem('cart') || '[]');
-      if (cart.length === 0) {
-        alert('Keranjang kosong!');
-        closeCartPopup();
-        return;
-      }
-      const shippingCity = sessionStorage.getItem('shippingCity');
-      if (!shippingCity) {
-        alert('Pilih kota tujuan dulu!');
-        return;
-      }
-      const shippingCost = shippingCosts[shippingCity] || 0;
-      const itemsTotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-      const total = itemsTotal + shippingCost;
-      const invoiceUrl = 'payment.html';
-      alert(`Menuju pembayaran. Barang: Rp ${itemsTotal.toLocaleString('id-ID')}, Ongkir: Rp ${shippingCost.toLocaleString('id-ID')}, Total: Rp ${total.toLocaleString('id-ID')}`);
-      window.open(invoiceUrl, '_blank');
-      sessionStorage.removeItem('cart');
-      sessionStorage.removeItem('shippingCity');
-      updateCartCount();
-      closeCartPopup();
-    }
-
-    function updateStockUI() {
-      document.querySelectorAll('.stock-badge').forEach(badge => {
-        const productId = badge.getAttribute('data-product');
-        badge.textContent = `Tersisa ${dummyStocks[productId]}`;
+    // Perbarui atau tambahkan pengguna
+    const userIndex = content.users.findIndex(u => u.username === username);
+    if (userIndex >= 0) {
+      content.users[userIndex] = { 
+        username, 
+        name, 
+        password: content.users[userIndex].password, // Pertahankan kata sandi
+        profile_picture: profilePic, 
+        member_card: memberCard 
+      };
+    } else {
+      content.users.push({ 
+        username, 
+        name, 
+        password: 'defaultPassword', // Harusnya ditangani saat registrasi
+        profile_picture: profilePic, 
+        member_card: memberCard 
       });
-      const popupStock = document.getElementById('popupStock');
-      if (popupStock && currentProduct.id) {
-        popupStock.textContent = `Stok: ${dummyStocks[currentProduct.id] || 0}`;
+    }
+
+    // Encode ke base64
+    const encodedContent = btoa(JSON.stringify(content, null, 2));
+
+    // Simpan kembali ke GitHub
+    await axios.put(
+      `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${GITHUB_FILE_PATH}`,
+      {
+        message: `Update user data for ${username}`,
+        content: encodedContent,
+        sha: sha
+      },
+      {
+        headers: { Authorization: `token ${GITHUB_TOKEN}` }
       }
-    }
+    );
+    console.log('User data saved!');
+  } catch (error) {
+    console.error('Error saving user data:', error);
+  }
+}
 
-    function masuk() {
-      document.getElementById("cover").classList.add("hidden");
-      document.getElementById("mainContent").classList.remove("hidden");
-      const bgm = document.getElementById("bgm");
-      bgm.play().catch((e) => console.warn("Gagal memutar musik:", e));
-      updateCartCount();
-      updateStockUI();
-      updateCountdown();
-      setInterval(updateCountdown, 1000);
-    }
+let currentSlide = 0;
+let slides = [];
+let currentProduct = { title: '', price: 0, id: '' };
 
-    function openPopup(title, description, price, images, productId) {
-      document.getElementById("popupTitle").textContent = title;
-      document.getElementById("popupDescription").textContent = description;
-      document.getElementById("popupPrice").textContent = `Rp ${price.toLocaleString('id-ID')}`;
-      document.getElementById("popupStock").textContent = `Stok: ${dummyStocks[productId] || 0}`;
-      currentProduct = { title, price, id: productId };
+// Stok dummy (statis, tidak berkurang)
+const dummyStocks = {
+  'eau-de-parfum': 100,
+  'nuit': 10,
+  'belle': 10
+};
 
-      const slider = document.getElementById("popupSlider");
-      slider.innerHTML = "";
-      slides = images;
-      images.forEach((src, index) => {
-        const img = document.createElement("img");
-        img.src = src;
-        img.alt = title;
-        img.loading = "lazy";
-        if (index === 0) img.classList.add("active");
-        slider.appendChild(img);
-      });
+// Ongkir J&T
+const shippingCosts = {
+  jakarta: 0,
+  bandung: 0,
+  surabaya: 0,
+  lainnya: 0
+};
 
-      const thumbnails = document.getElementById("popupThumbnails");
-      thumbnails.innerHTML = "";
-      images.forEach((src, index) => {
-        const thumb = document.createElement("img");
-        thumb.src = src;
-        thumb.className = "thumbnail";
-        if (index === 0) thumb.classList.add("active");
-        thumb.onclick = () => goToSlide(index);
-        thumbnails.appendChild(thumb);
-      });
+// Hitungan mundur
+function updateCountdown() {
+  const targetDate = new Date('2025-05-15T00:00:00');
+  const now = new Date();
+  const diff = targetDate - now;
 
-      const savedCity = sessionStorage.getItem('productShippingCity');
-      if (savedCity) {
-        document.getElementById('productShippingCity').value = savedCity;
-      }
-      updateProductShippingCost();
-      currentSlide = 0;
-      document.getElementById("productPopup").style.display = "flex";
-    }
+  if (diff <= 0) {
+    document.getElementById('countdownTimer').textContent = 'Waktu habis!';
+    return;
+  }
 
-    function closePopup() {
-      document.getElementById("productPopup").style.display = "none";
-    }
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+  const seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
-    function changeSlide(direction) {
-      const images = document.querySelectorAll(".slider img");
-      const thumbs = document.querySelectorAll(".thumbnail");
-      images[currentSlide].classList.remove("active");
-      thumbs[currentSlide].classList.remove("active");
-      currentSlide = (currentSlide + direction + slides.length) % slides.length;
-      images[currentSlide].classList.add("active");
-      thumbs[currentSlide].classList.add("active");
-    }
+  document.getElementById('countdownTimer').textContent = 
+    ` ${days} Days / ${hours} H / ${minutes} M / ${seconds} S`;
+}
 
-    function goToSlide(index) {
-      const images = document.querySelectorAll(".slider img");
-      const thumbs = document.querySelectorAll(".thumbnail");
-      images[currentSlide].classList.remove("active");
-      thumbs[currentSlide].classList.remove("active");
-      currentSlide = index;
-      images[currentSlide].classList.add("active");
-      thumbs[currentSlide].classList.add("active");
-    }
+// Update ongkir di popup keranjang
+function updateShippingCost() {
+  const select = document.getElementById('shippingCity');
+  const shippingCostElement = document.getElementById('shippingCost');
+  const selectedCity = select.value;
+  let shippingCost = 0;
 
-    function initiatePayment() {
-      if (dummyStocks[currentProduct.id] <= 0) {
-        alert("Maaf, stok produk habis!");
-        closePopup();
-        return;
-      }
-      const shippingCity = document.getElementById('productShippingCity').value;
-      if (!shippingCity) {
-        alert('Pilih kota tujuan dulu!');
-        return;
-      }
-      const shippingCost = shippingCosts[shippingCity] || 0;
-      const total = currentProduct.price + shippingCost;
-      const invoiceUrl = 'payment.html';
-      alert(`Menuju pembayaran. Barang: Rp ${currentProduct.price.toLocaleString('id-ID')}, Ongkir: Rp ${shippingCost.toLocaleString('id-ID')}, Total: Rp ${total.toLocaleString('id-ID')}`);
-      window.open(invoiceUrl, '_blank');
-      sessionStorage.removeItem('productShippingCity');
-      closePopup();
-    }
+  if (selectedCity && shippingCosts[selectedCity]) {
+    shippingCost = shippingCosts[selectedCity];
+    sessionStorage.setItem('shippingCity', selectedCity);
+  } else {
+    sessionStorage.removeItem('shippingCity');
+  }
 
-    function scrollToContact() {
-      const contactSection = document.getElementById('contact');
-      if (contactSection) {
-        contactSection.scrollIntoView({ behavior: 'smooth' });
-      } else {
-        console.error('Elemen #contact tidak ditemukan.');
-      }
-    }
+  shippingCostElement.textContent = `Ongkir: Rp ${shippingCost.toLocaleString('id-ID')}`;
+  updateCartTotal();
+}
 
-    function scrollToProducts() {
-      const productsSection = document.getElementById('products');
-      if (productsSection) {
-        productsSection.scrollIntoView({ behavior: 'smooth' });
-      } else {
-        console.error('Elemen #products tidak ditemukan.');
-      }
-    }
+// Update ongkir di popup produk
+function updateProductShippingCost() {
+  const select = document.getElementById('productShippingCity');
+  const shippingCostElement = document.getElementById('productShippingCost');
+  const selectedCity = select.value;
+  let shippingCost = 0;
 
-    // Menu Hamburger
-    function toggleMenu() {
-      const navLinks = document.querySelector('.nav-links');
-      navLinks.classList.toggle('active');
-    }
+  if (selectedCity && shippingCosts[selectedCity]) {
+    shippingCost = shippingCosts[selectedCity];
+    sessionStorage.setItem('productShippingCity', selectedCity);
+  } else {
+    sessionStorage.removeItem('productShippingCity');
+  }
 
-    // Efek Scroll Navbar
-    window.addEventListener('scroll', () => {
-      const navbar = document.querySelector('.navbar');
-      if (window.scrollY > 50) {
-        navbar.classList.add('scrolled');
-      } else {
-        navbar.classList.remove('scrolled');
-      }
-    });
+  shippingCostElement.textContent = `Ongkir: Rp ${shippingCost.toLocaleString('id-ID')}`;
+}
 
-    // Login Popup
-    function openLoginPopup() {
-      const isLoggedIn = sessionStorage.getItem('isLoggedIn');
-      const navLinks = document.querySelector('.nav-links');
-      navLinks.classList.remove('active'); // Tutup menu hamburger
-      if (isLoggedIn) {
-        openUserInfoPopup();
-      } else {
-        displayLoginForm();
-      }
-      document.getElementById('loginPopup').style.display = 'flex';
-    }
+// Update total keranjang
+function updateCartTotal() {
+  const cart = JSON.parse(sessionStorage.getItem('cart') || '[]');
+  const shippingCity = sessionStorage.getItem('shippingCity');
+  let shippingCost = shippingCity && shippingCosts[shippingCity] ? shippingCosts[shippingCity] : 0;
+  const itemsTotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const total = itemsTotal + shippingCost;
+  document.getElementById('cartTotal').textContent = `Total: Rp ${total.toLocaleString('id-ID')}`;
+}
 
-    function displayLoginForm() {
-      const loginContent = document.getElementById('loginContent');
-      loginContent.innerHTML = `
-        <h2>Login</h2>
-        <form id="loginForm" onsubmit="handleLogin(event)">
-          <div class="form-group">
-            <label for="username">Username</label>
-            <input type="text" id="username" name="username" required>
-          </div>
-          <div class="form-group">
-            <label for="password">Password</label>
-            <input type="password" id="password" name="password" required>
-          </div>
-          <button type="submit">Login</button>
-          <p id="loginError" style="color: #ff6b6b; display: none;">Username atau password salah!</p>
-        </form>
+// Keranjang
+function updateCartCount() {
+  const cart = JSON.parse(sessionStorage.getItem('cart') || '[]');
+  const count = cart.reduce((sum, item) => sum + item.quantity, 0);
+  const cartElement = document.getElementById('cartCount');
+  cartElement.textContent = count;
+  cartElement.parentElement.classList.add('shake');
+  setTimeout(() => cartElement.parentElement.classList.remove('shake'), 500);
+}
+
+function showCartNotification() {
+  let notification = document.querySelector('.cart-notification');
+  if (!notification) {
+    notification = document.createElement('div');
+    notification.className = 'cart-notification';
+    document.body.appendChild(notification);
+  }
+  notification.textContent = 'Produk ditambahkan!';
+  notification.classList.add('active');
+  setTimeout(() => {
+    notification.classList.remove('active');
+  }, 2000);
+}
+
+function addToCart() {
+  if (dummyStocks[currentProduct.id] <= 0) {
+    alert('Maaf, stok habis!');
+    return;
+  }
+  let cart = JSON.parse(sessionStorage.getItem('cart') || '[]');
+  const existing = cart.find(item => item.id === currentProduct.id);
+  if (existing) {
+    existing.quantity += 1;
+  } else {
+    cart.push({ ...currentProduct, quantity: 1 });
+  }
+  sessionStorage.setItem('cart', JSON.stringify(cart));
+  updateCartCount();
+  showCartNotification();
+  closePopup();
+}
+
+function openCartPopup() {
+  const cart = JSON.parse(sessionStorage.getItem('cart') || '[]');
+  const cartItems = document.getElementById('cartItems');
+  cartItems.innerHTML = '';
+  if (cart.length === 0) {
+    cartItems.innerHTML = '<p>Keranjang kosong.</p>';
+  } else {
+    cart.forEach((item, index) => {
+      const div = document.createElement('div');
+      div.className = 'cart-item';
+      div.innerHTML = `
+        <span>${item.title}</span>
+        <div class="quantity-controls">
+          <button onclick="updateQuantity(${index}, -1)">-</button>
+          <span>${item.quantity}</span>
+          <button onclick="updateQuantity(${index}, 1)">+</button>
+        </div>
+        <span>Rp ${(item.price * item.quantity).toLocaleString('id-ID')}</span>
+        <button onclick="removeFromCart(${index})">Hapus</button>
       `;
-    }
+      cartItems.appendChild(div);
+    });
+  }
+  const savedCity = sessionStorage.getItem('shippingCity');
+  if (savedCity) {
+    document.getElementById('shippingCity').value = savedCity;
+  }
+  updateShippingCost();
+  document.getElementById('cartPopup').style.display = 'flex';
+  const navLinks = document.querySelector('.nav-links');
+  navLinks.classList.remove('active'); // Tutup menu hamburger
+}
 
-    async function openUserInfoPopup() {
+function updateQuantity(index, change) {
+  let cart = JSON.parse(sessionStorage.getItem('cart') || '[]');
+  const newQuantity = cart[index].quantity + change;
+  if (newQuantity <= 0) {
+    removeFromCart(index);
+    return;
+  }
+  cart[index].quantity = newQuantity;
+  sessionStorage.setItem('cart', JSON.stringify(cart));
+  updateCartCount();
+  showCartNotification();
+  openCartPopup();
+}
+
+function closeCartPopup() {
+  document.getElementById('cartPopup').style.display = 'none';
+}
+
+function removeFromCart(index) {
+  let cart = JSON.parse(sessionStorage.getItem('cart') || '[]');
+  cart.splice(index, 1);
+  sessionStorage.setItem('cart', JSON.stringify(cart));
+  updateCartCount();
+  openCartPopup();
+}
+
+function checkoutCart() {
+  const cart = JSON.parse(sessionStorage.getItem('cart') || '[]');
+  if (cart.length === 0) {
+    alert('Keranjang kosong!');
+    closeCartPopup();
+    return;
+  }
+  const shippingCity = sessionStorage.getItem('shippingCity');
+  if (!shippingCity) {
+    alert('Pilih kota tujuan dulu!');
+    return;
+  }
+  const shippingCost = shippingCosts[shippingCity] || 0;
+  const itemsTotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const total = itemsTotal + shippingCost;
+  const invoiceUrl = 'payment.html';
+  alert(`Menuju pembayaran. Barang: Rp ${itemsTotal.toLocaleString('id-ID')}, Ongkir: Rp ${shippingCost.toLocaleString('id-ID')}, Total: Rp ${total.toLocaleString('id-ID')}`);
+  window.open(invoiceUrl, '_blank');
+  sessionStorage.removeItem('cart');
+  sessionStorage.removeItem('shippingCity');
+  updateCartCount();
+  closeCartPopup();
+}
+
+function updateStockUI() {
+  document.querySelectorAll('.stock-badge').forEach(badge => {
+    const productId = badge.getAttribute('data-product');
+    badge.textContent = `Tersisa ${dummyStocks[productId]}`;
+  });
+  const popupStock = document.getElementById('popupStock');
+  if (popupStock && currentProduct.id) {
+    popupStock.textContent = `Stok: ${dummyStocks[currentProduct.id] || 0}`;
+  }
+}
+
+function masuk() {
+  document.getElementById("cover").classList.add("hidden");
+  document.getElementById("mainContent").classList.remove("hidden");
+  const bgm = document.getElementById("bgm");
+  bgm.play().catch((e) => console.warn("Gagal memutar musik:", e));
+  updateCartCount();
+  updateStockUI();
+  updateCountdown();
+  setInterval(updateCountdown, 1000);
+}
+
+function openPopup(title, description, price, images, productId) {
+  document.getElementById("popupTitle").textContent = title;
+  document.getElementById("popupDescription").textContent = description;
+  document.getElementById("popupPrice").textContent = `Rp ${price.toLocaleString('id-ID')}`;
+  document.getElementById("popupStock").textContent = `Stok: ${dummyStocks[productId] || 0}`;
+  currentProduct = { title, price, id: productId };
+
+  const slider = document.getElementById("popupSlider");
+  slider.innerHTML = "";
+  slides = images;
+  images.forEach((src, index) => {
+    const img = document.createElement("img");
+    img.src = src;
+    img.alt = title;
+    img.loading = "lazy";
+    if (index === 0) img.classList.add("active");
+    slider.appendChild(img);
+  });
+
+  const thumbnails = document.getElementById("popupThumbnails");
+  thumbnails.innerHTML = "";
+  images.forEach((src, index) => {
+    const thumb = document.createElement("img");
+    thumb.src = src;
+    thumb.className = "thumbnail";
+    if (index === 0) thumb.classList.add("active");
+    thumb.onclick = () => goToSlide(index);
+    thumbnails.appendChild(thumb);
+  });
+
+  const savedCity = sessionStorage.getItem('productShippingCity');
+  if (savedCity) {
+    document.getElementById('productShippingCity').value = savedCity;
+  }
+  updateProductShippingCost();
+  currentSlide = 0;
+  document.getElementById("productPopup").style.display = "flex";
+}
+
+function closePopup() {
+  document.getElementById("productPopup").style.display = "none";
+}
+
+function changeSlide(direction) {
+  const images = document.querySelectorAll(".slider img");
+  const thumbs = document.querySelectorAll(".thumbnail");
+  images[currentSlide].classList.remove("active");
+  thumbs[currentSlide].classList.remove("active");
+  currentSlide = (currentSlide + direction + slides.length) % slides.length;
+  images[currentSlide].classList.add("active");
+  thumbs[currentSlide].classList.add("active");
+}
+
+function goToSlide(index) {
+  const images = document.querySelectorAll(".slider img");
+  const thumbs = document.querySelectorAll(".thumbnail");
+  images[currentSlide].classList.remove("active");
+  thumbs[currentSlide].classList.remove("active");
+  currentSlide = index;
+  images[currentSlide].classList.add("active");
+  thumbs[currentSlide].classList.add("active");
+}
+
+function initiatePayment() {
+  if (dummyStocks[currentProduct.id] <= 0) {
+    alert("Maaf, stok produk habis!");
+    closePopup();
+    return;
+  }
+  const shippingCity = document.getElementById('productShippingCity').value;
+  if (!shippingCity) {
+    alert('Pilih kota tujuan dulu!');
+    return;
+  }
+  const shippingCost = shippingCosts[shippingCity] || 0;
+  const total = currentProduct.price + shippingCost;
+  const invoiceUrl = 'payment.html';
+  alert(`Menuju pembayaran. Barang: Rp ${currentProduct.price.toLocaleString('id-ID')}, Ongkir: Rp ${shippingCost.toLocaleString('id-ID')}, Total: Rp ${total.toLocaleString('id-ID')}`);
+  window.open(invoiceUrl, '_blank');
+  sessionStorage.removeItem('productShippingCity');
+  closePopup();
+}
+
+function scrollToContact() {
+  const contactSection = document.getElementById('contact');
+  if (contactSection) {
+    contactSection.scrollIntoView({ behavior: 'smooth' });
+  } else {
+    console.error('Elemen #contact tidak ditemukan.');
+  }
+}
+
+function scrollToProducts() {
+  const productsSection = document.getElementById('products');
+  if (productsSection) {
+    productsSection.scrollIntoView({ behavior: 'smooth' });
+  } else {
+    console.error('Elemen #products tidak ditemukan.');
+  }
+}
+
+// Menu Hamburger
+function toggleMenu() {
+  const navLinks = document.querySelector('.nav-links');
+  navLinks.classList.toggle('active');
+}
+
+// Efek Scroll Navbar
+window.addEventListener('scroll', () => {
+  const navbar = document.querySelector('.navbar');
+  if (window.scrollY > 50) {
+    navbar.classList.add('scrolled');
+  } else {
+    navbar.classList.remove('scrolled');
+  }
+});
+
+// Login Popup
+function openLoginPopup() {
+  const isLoggedIn = sessionStorage.getItem('isLoggedIn');
+  const navLinks = document.querySelector('.nav-links');
+  navLinks.classList.remove('active'); // Tutup menu hamburger
+  if (isLoggedIn) {
+    openUserInfoPopup();
+  } else {
+    displayLoginForm();
+  }
+  document.getElementById('loginPopup').style.display = 'flex';
+}
+
+function displayLoginForm() {
+  const loginContent = document.getElementById('loginContent');
+  loginContent.innerHTML = `
+    <h2>Login</h2>
+    <form id="loginForm" onsubmit="handleLogin(event)">
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" required>
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" required>
+      </div>
+      <button type="submit">Login</button>
+      <p id="loginError" style="color: #ff6b6b; display: none;">Username atau password salah!</p>
+    </form>
+  `;
+}
+
+async function openUserInfoPopup() {
+  const username = sessionStorage.getItem('username');
+  const name = sessionStorage.getItem('name') || username;
+  const profilePic = sessionStorage.getItem('profilePic') || 'https://cdn-icons-png.flaticon.com/512/3088/3088765.png';
+  const memberStatus = sessionStorage.getItem('memberStatus') || 'Rhelys Card💳';
+  const loginContent = document.getElementById('loginContent');
+  loginContent.innerHTML = `
+    <h2>Informasi Pengguna</h2>
+    <div class="user-banner">
+      <img src="${profilePic}" alt="Profile Picture" class="profile-pic">
+      <div class="username">${name}</div>
+      <div class="member-status">Status: ${memberStatus}</div>
+      <input type="file" id="profilePicInput" accept="image/*" style="display: none;" onchange="handleProfilePicChange(event)">
+      <button class="change-profile-pic-btn" onclick="triggerProfilePicUpload()">Ubah Foto Profil</button>
+      <button onclick="logout()">Logout</button>
+    </div>
+  `;
+  document.getElementById('loginPopup').style.display = 'flex';
+  const dropdown = document.querySelector('.user-dropdown');
+  if (dropdown) dropdown.classList.remove('active');
+}
+
+function triggerProfilePicUpload() {
+  document.getElementById('profilePicInput').click();
+}
+
+async function handleProfilePicChange(event) {
+  const file = event.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = async function(e) {
+      const newProfilePic = e.target.result;
       const username = sessionStorage.getItem('username');
       const name = sessionStorage.getItem('name') || username;
-      const profilePic = sessionStorage.getItem('profilePic') || 'https://cdn-icons-png.flaticon.com/512/3088/3088765.png';
-      const memberStatus = sessionStorage.getItem('memberStatus') || 'Rhelys Card💳';
-      const loginContent = document.getElementById('loginContent');
-      loginContent.innerHTML = `
-        <h2>Informasi Pengguna</h2>
-        <div class="user-banner">
-          <img src="${profilePic}" alt="Profile Picture" class="profile-pic">
-          <div class="username">${name}</div>
-          <div class="member-status">Status: ${memberStatus}</div>
-          <input type="file" id="profilePicInput" accept="image/*" style="display: none;" onchange="handleProfilePicChange(event)">
-          <button class="change-profile-pic-btn" onclick="triggerProfilePicUpload()">Ubah Foto Profil</button>
-          <button onclick="logout()">Logout</button>
-        </div>
-      `;
-      document.getElementById('loginPopup').style.display = 'flex';
-      const dropdown = document.querySelector('.user-dropdown');
-      if (dropdown) dropdown.classList.remove('active');
-    }
-
-    function triggerProfilePicUpload() {
-      document.getElementById('profilePicInput').click();
-    }
-
-    async function handleProfilePicChange(event) {
-      const file = event.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = async function(e) {
-          const newProfilePic = e.target.result;
-          const username = sessionStorage.getItem('username');
-          const name = sessionStorage.getItem('name') || username;
-          sessionStorage.setItem('profilePic', newProfilePic);
-          // Simpan ke GitHub
-          await saveUserData(username, name, newProfilePic);
-          updateNavbarAfterLogin();
-          openUserInfoPopup();
-        };
-        reader.readAsDataURL(file);
-      }
-    }
-
-    function openMemberBenefitsPopup() {
-      const loginContent = document.getElementById('loginContent');
-      loginContent.innerHTML = `
-        <h2>Your Member Card</h2>
-        <img src="card.jpg" alt="Rhélys Card💳" class="member-card-img">
-        <div class="benefits">
-          <p>✨ Diskon eksklusif hingga 20% untuk setiap pembelian.</p>
-          <p>💎 Bonus Produk</p>
-          <p>🎟️ Tiket Untuk mengikuti Giveaway</p>
-          <p>🌟 Akses awal ke koleksi terbaru sebelum publik.</p>
-        </div>
-        <button onclick="closeLoginPopup()">Tutup</button>
-      `;
-      document.getElementById('loginPopup').style.display = 'flex';
-      const dropdown = document.querySelector('.user-dropdown');
-      if (dropdown) dropdown.classList.remove('active');
-    }
-
-    function closeLoginPopup() {
-      document.getElementById('loginPopup').style.display = 'none';
-    }
-
-    async function handleLogin(event) {
-      event.preventDefault();
-      const username = document.getElementById('username').value;
-      const password = document.getElementById('password').value;
-      const errorElement = document.getElementById('loginError');
-
-      // Validasi dummy
-      if (username === 'Rizka' && password === 'Rizka Cantik') {
-        // Cek apakah pengguna ada di GitHub
-        const userData = await getUserData(username);
-        if (userData) {
-          // Gunakan data dari GitHub
-          sessionStorage.setItem('isLoggedIn', 'true');
-          sessionStorage.setItem('username', username);
-          sessionStorage.setItem('name', userData.name);
-          sessionStorage.setItem('profilePic', userData.profile_picture);
-          sessionStorage.setItem('memberStatus', 'Rhelys Card💳');
-        } else {
-          // Jika pengguna baru, simpan ke GitHub
-          const name = username; // Ganti dengan nama asli jika ada input
-          const profilePic = 'https://cdn-icons-png.flaticon.com/512/3088/3088765.png'; // Default profile pic
-          await saveUserData(username, name, profilePic);
-          sessionStorage.setItem('isLoggedIn', 'true');
-          sessionStorage.setItem('username', username);
-          sessionStorage.setItem('name', name);
-          sessionStorage.setItem('profilePic', profilePic);
-          sessionStorage.setItem('memberStatus', 'Rhelys Card💳');
-        }
-        alert('Login berhasil!');
-        closeLoginPopup();
-        updateNavbarAfterLogin();
-      } else {
-        errorElement.style.display = 'block';
-      }
-    }
-
-    function toggleUserDropdown() {
-      const dropdown = document.querySelector('.user-dropdown');
-      dropdown.classList.toggle('active');
-    }
-
-    function updateNavbarAfterLogin() {
-      const isLoggedIn = sessionStorage.getItem('isLoggedIn');
-      const username = sessionStorage.getItem('username');
-      const name = sessionStorage.getItem('name') || username;
-      const profilePic = sessionStorage.getItem('profilePic') || 'https://cdn-icons-png.flaticon.com/512/3088/3088765.png';
-      const memberStatus = sessionStorage.getItem('memberStatus') || 'Rhelys Card💳';
-      const navbarActions = document.querySelector('.navbar-actions');
-      
-      if (isLoggedIn) {
-        navbarActions.innerHTML = `
-          <span class="cart" onclick="openCartPopup()"><i class="fas fa-shopping-cart"></i><span class="cart-count" id="cartCount">0</span></span>
-          <img src="${profilePic}" alt="Profile Picture" class="user-profile-pic" onclick="toggleUserDropdown()">
-          <span class="username" onclick="openUserInfoPopup()">${name}</span>
-          <span class="member-badge" onclick="openMemberBenefitsPopup()">${memberStatus}</span>
-          <div class="user-dropdown">
-            <a href="#" onclick="openUserInfoPopup()">User Info</a>
-          </div>
-        `;
-        updateCartCount();
-      } else {
-        navbarActions.innerHTML = `
-          <span class="cart" onclick="openCartPopup()"><i class="fas fa-shopping-cart"></i><span class="cart-count" id="cartCount">0</span></span>
-          <a href="#" onclick="openLoginPopup()" class="login-link">Login</a>
-        `;
-        updateCartCount();
-      }
-    }
-
-    function logout() {
-      sessionStorage.removeItem('isLoggedIn');
-      sessionStorage.removeItem('username');
-      sessionStorage.removeItem('name');
-      sessionStorage.removeItem('profilePic');
-      sessionStorage.removeItem('memberStatus');
-      alert('Anda telah logout.');
-      closeLoginPopup();
-      window.location.reload(true);
-    }
-
-    document.getElementById("productPopup").addEventListener("click", (e) => {
-      if (e.target === document.getElementById("productPopup")) closePopup();
-    });
-
-    document.getElementById("cartPopup").addEventListener("click", (e) => {
-      if (e.target === document.getElementById("cartPopup")) closeCartPopup();
-    });
-
-    document.getElementById("loginPopup").addEventListener("click", (e) => {
-      if (e.target === document.getElementById("loginPopup")) closeLoginPopup();
-    });
-
-    // Tutup dropdown saat klik di luar
-    document.addEventListener('click', (e) => {
-      const dropdown = document.querySelector('.user-dropdown');
-      const profilePic = document.querySelector('.user-profile-pic');
-      if (dropdown && profilePic && !dropdown.contains(e.target) && !profilePic.contains(e.target)) {
-        dropdown.classList.remove('active');
-      }
-    });
-
-    // Cek status login saat halaman dimuat
-    document.addEventListener('DOMContentLoaded', () => {
+      const memberCard = sessionStorage.getItem('memberCard');
+      sessionStorage.setItem('profilePic', newProfilePic);
+      // Simpan ke GitHub
+      await saveUserData(username, name, newProfilePic, memberCard);
       updateNavbarAfterLogin();
-    });
+      openUserInfoPopup();
+    };
+    reader.readAsDataURL(file);
+  }
+}
+
+function openMemberBenefitsPopup() {
+  const memberCard = sessionStorage.getItem('memberCard') || 'Rey.png';
+  const loginContent = document.getElementById('loginContent');
+  loginContent.innerHTML = `
+    <h2>Your Member Card</h2>
+    <img src="${memberCard}" alt="Rhélys Card💳" class="member-card-img">
+    <div class="benefits">
+      <p>✨ Diskon eksklusif hingga 20% untuk setiap pembelian.</p>
+      <p>💎 Bonus Produk</p>
+      <p>🎟️ Tiket Untuk mengikuti Giveaway</p>
+      <p>🌟 Akses awal ke koleksi terbaru sebelum publik.</p>
+    </div>
+    <button onclick="closeLoginPopup()">Tutup</button>
+  `;
+  document.getElementById('loginPopup').style.display = 'flex';
+  const dropdown = document.querySelector('.user-dropdown');
+  if (dropdown) dropdown.classList.remove('active');
+}
+
+function closeLoginPopup() {
+  document.getElementById('loginPopup').style.display = 'none';
+}
+
+async function handleLogin(event) {
+  event.preventDefault();
+  const username = document.getElementById('username').value;
+  const password = document.getElementById('password').value;
+  const errorElement = document.getElementById('loginError');
+
+  // Cek pengguna di GitHub
+  const userData = await getUserData(username);
+  if (userData && userData.password === password) {
+    sessionStorage.setItem('isLoggedIn', 'true');
+    sessionStorage.setItem('username', username);
+    sessionStorage.setItem('name', userData.name);
+    sessionStorage.setItem('profilePic', userData.profile_picture);
+    sessionStorage.setItem('memberStatus', 'Rhelys Card💳');
+    sessionStorage.setItem('memberCard', userData.member_card); // Simpan member card
+    alert('Login berhasil!');
+    closeLoginPopup();
+    updateNavbarAfterLogin();
+  } else {
+    errorElement.style.display = 'block';
+  }
+}
+
+function toggleUserDropdown() {
+  const dropdown = document.querySelector('.user-dropdown');
+  dropdown.classList.toggle('active');
+}
+
+function updateNavbarAfterLogin() {
+  const isLoggedIn = sessionStorage.getItem('isLoggedIn');
+  const username = sessionStorage.getItem('username');
+  const name = sessionStorage.getItem('name') || username;
+  const profilePic = sessionStorage.getItem('profilePic') || 'https://cdn-icons-png.flaticon.com/512/3088/3088765.png';
+  const memberStatus = sessionStorage.getItem('memberStatus') || 'Rhelys Card💳';
+  const navbarActions = document.querySelector('.navbar-actions');
+  
+  if (isLoggedIn) {
+    navbarActions.innerHTML = `
+      <span class="cart" onclick="openCartPopup()"><i class="fas fa-shopping-cart"></i><span class="cart-count" id="cartCount">0</span></span>
+      <img src="${profilePic}" alt="Profile Picture" class="user-profile-pic" onclick="toggleUserDropdown()">
+      <span class="username" onclick="openUserInfoPopup()">${name}</span>
+      <span class="member-badge" onclick="openMemberBenefitsPopup()">${memberStatus}</span>
+      <div class="user-dropdown">
+        <a href="#" onclick="openUserInfoPopup()">User Info</a>
+      </div>
+    `;
+    updateCartCount();
+  } else {
+    navbarActions.innerHTML = `
+      <span class="cart" onclick="openCartPopup()"><i class="fas fa-shopping-cart"></i><span class="cart-count" id="cartCount">0</span></span>
+      <a href="#" onclick="openLoginPopup()" class="login-link">Login</a>
+    `;
+    updateCartCount();
+  }
+}
+
+function logout() {
+  sessionStorage.removeItem('isLoggedIn');
+  sessionStorage.removeItem('username');
+  sessionStorage.removeItem('name');
+  sessionStorage.removeItem('profilePic');
+  sessionStorage.removeItem('memberStatus');
+  sessionStorage.removeItem('memberCard');
+  alert('Anda telah logout.');
+  closeLoginPopup();
+  window.location.reload(true);
+}
+
+document.getElementById("productPopup").addEventListener("click", (e) => {
+  if (e.target === document.getElementById("productPopup")) closePopup();
+});
+
+document.getElementById("cartPopup").addEventListener("click", (e) => {
+  if (e.target === document.getElementById("cartPopup")) closeCartPopup();
+});
+
+document.getElementById("loginPopup").addEventListener("click", (e) => {
+  if (e.target === document.getElementById("loginPopup")) closeLoginPopup();
+});
+
+// Tutup dropdown saat klik di luar
+document.addEventListener('click', (e) => {
+  const dropdown = document.querySelector('.user-dropdown');
+  const profilePic = document.querySelector('.user-profile-pic');
+  if (dropdown && profilePic && !dropdown.contains(e.target) && !profilePic.contains(e.target)) {
+    dropdown.classList.remove('active');
+  }
+});
+
+// Cek status login saat halaman dimuat
+document.addEventListener('DOMContentLoaded', () => {
+  updateNavbarAfterLogin();
+});
   </script>
 </body>
 </html>
